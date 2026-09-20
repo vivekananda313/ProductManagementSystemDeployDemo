@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: product-management
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: product-management
+
+  template:
+    metadata:
+      labels:
+        app: product-management
+
+    spec:
+      containers:
+        - name: product-management
+          image: vivek58254/product-management-system:1.0
+
+          ports:
+            - containerPort: 8082
+
+          env:
+            - name: DB_URL
+              value: jdbc:mysql://mysql:3306/product_management_db
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD

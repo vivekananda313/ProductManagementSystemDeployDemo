@@ -32,6 +32,23 @@ pipeline {
                 bat 'docker build -t product-management-system:1.0 .'
             }
         }
+
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )]) {
+
+                    bat 'echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin'
+
+                    bat 'docker tag product-management-system:1.0 %DOCKER_USERNAME%/product-management-system:1.0'
+
+                    bat 'docker push %DOCKER_USERNAME%/product-management-system:1.0'
+                }
+            }
+        }
     }
 
     post {

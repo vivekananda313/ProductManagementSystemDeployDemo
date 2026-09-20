@@ -26,6 +26,12 @@ pipeline {
                 bat 'mvnw.cmd test'
             }
         }
+
+        stage('Docker Build') {
+            steps {
+                bat 'docker build -t product-management-system:1.0 .'
+            }
+        }
     }
 
     post {

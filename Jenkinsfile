@@ -31,7 +31,7 @@ pipeline {
     }
 
 
-    // Prevent automatic checkout
+    // Prevent Jenkins automatic checkout
     options {
         skipDefaultCheckout(true)
     }
@@ -96,7 +96,7 @@ pipeline {
 
                         $env:DOCKER_PASSWORD |
                             docker login `
-                            --username "vivek58254" `
+                            -u "vivek58254" `
                             --password-stdin
                     '''
                 }
@@ -109,6 +109,7 @@ pipeline {
         // =========================
         stage('Docker Build') {
             steps {
+
                 bat 'docker build -t %DOCKER_IMAGE%:%IMAGE_TAG% .'
             }
         }
@@ -119,6 +120,7 @@ pipeline {
         // =========================
         stage('Docker Push') {
             steps {
+
                 bat 'docker push %DOCKER_IMAGE%:%IMAGE_TAG%'
             }
         }
@@ -129,6 +131,7 @@ pipeline {
         // =========================
         stage('Deploy to Kubernetes') {
             steps {
+
                 bat 'kubectl set image deployment/product-management product-management=%DOCKER_IMAGE%:%IMAGE_TAG%'
             }
         }

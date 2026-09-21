@@ -36,9 +36,10 @@ pipeline {
 
         stage('Docker Login') {
             steps {
-                withCredentials([string(
-                    credentialsId: 'dockerhub-token',
-                    variable: 'DOCKER_PASSWORD'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
 
                     powershell '''
@@ -48,7 +49,7 @@ pipeline {
 
                     $env:DOCKER_CONFIG = $dockerConfig
 
-                    $env:DOCKER_PASSWORD | docker login -u vivek58254 --password-stdin
+                    $env:DOCKER_PASSWORD | docker login -u $env:DOCKER_USERNAME --password-stdin
                     '''
                 }
             }

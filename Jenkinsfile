@@ -31,7 +31,7 @@ pipeline {
     }
 
 
-    // Prevent automatic checkout
+    // Prevent Jenkins automatic checkout
     options {
         skipDefaultCheckout(true)
     }
@@ -76,9 +76,10 @@ pipeline {
             steps {
 
                 withCredentials([
-                    string(
-                        credentialsId: 'dockerhub-token',
-                        variable: 'DOCKER_PASSWORD'
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
                     )
                 ]) {
 
@@ -92,12 +93,11 @@ pipeline {
 
                         $env:DOCKER_CONFIG = $dockerConfig
 
-                        Write-Host "Running as:"
-                        whoami
+                        Write-Host "Docker login started..."
 
                         $env:DOCKER_PASSWORD |
                             docker login `
-                            -u "vivek58254" `
+                            -u $env:DOCKER_USERNAME `
                             --password-stdin
                     '''
                 }

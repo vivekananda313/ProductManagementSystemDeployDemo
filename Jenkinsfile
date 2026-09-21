@@ -76,9 +76,10 @@ pipeline {
             steps {
 
                 withCredentials([
-                    string(
-                        credentialsId: 'dockerhub-token',
-                        variable: 'DOCKER_PASSWORD'
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASSWORD'
                     )
                 ]) {
 
@@ -94,7 +95,7 @@ pipeline {
 
                         $env:DOCKER_PASSWORD |
                             docker login `
-                            -u "vivek58254" `
+                            -u $env:DOCKER_USER `
                             --password-stdin
                     '''
                 }

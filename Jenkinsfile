@@ -93,8 +93,13 @@ pipeline {
 
                         $env:DOCKER_CONFIG = $dockerConfig
 
-                        Write-Host "Username length: $($env:DOCKER_USER.Length)"
-                        Write-Host "Password length: $($env:DOCKER_PASSWORD.Length)"
+                        Write-Host "Running as: $env:USERNAME"
+                        whoami
+
+                        $sha = [System.Security.Cryptography.SHA256]::Create()
+                        $bytes = [System.Text.Encoding]::UTF8.GetBytes($env:DOCKER_PASSWORD)
+                        $hash = [System.BitConverter]::ToString($sha.ComputeHash($bytes)) -replace "-",""
+                        Write-Host "Password SHA256: $hash"
 
                         $env:DOCKER_PASSWORD |
                             docker login `

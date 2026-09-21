@@ -25,6 +25,7 @@ pipeline {
     }
 
 
+    // Prevent Jenkins automatic checkout
     options {
         skipDefaultCheckout(true)
     }
@@ -70,7 +71,7 @@ pipeline {
 
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
+                        credentialsId: 'dockerhub-jenkins-pat',
                         usernameVariable: 'DOCKER_USERNAME',
                         passwordVariable: 'DOCKER_PASSWORD'
                     )
@@ -101,6 +102,7 @@ pipeline {
         // =========================
         stage('Docker Build') {
             steps {
+
                 bat 'docker build -t %DOCKER_IMAGE%:%IMAGE_TAG% .'
             }
         }
@@ -114,7 +116,7 @@ pipeline {
 
                 withCredentials([
                     usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
+                        credentialsId: 'dockerhub-jenkins-pat',
                         usernameVariable: 'DOCKER_USERNAME',
                         passwordVariable: 'DOCKER_PASSWORD'
                     )

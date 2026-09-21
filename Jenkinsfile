@@ -78,28 +78,37 @@ pipeline {
                     )
                 ]) {
 
-                    bat '''
-                        echo Logging into Docker Hub...
+                    powershell '''
+                        Write-Host "======================================"
+                        Write-Host "Logging into Docker Hub..."
+                        Write-Host "Username: $env:DOCKER_USERNAME"
+                        Write-Host "======================================"
 
-                        echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
+                        $env:DOCKER_PASSWORD |
+                            docker login `
+                            --username $env:DOCKER_USERNAME `
+                            --password-stdin
 
-                        if %ERRORLEVEL% NEQ 0 (
-                            echo Docker Hub login failed
-                            exit /b 1
-                        )
+                        if ($LASTEXITCODE -ne 0) {
+                            Write-Error "Docker Hub login failed"
+                            exit 1
+                        }
 
-                        echo Docker Hub login successful
+                        Write-Host "Docker Hub login successful"
 
-                        echo Pushing Docker image...
+                        Write-Host "======================================"
+                        Write-Host "Pushing Docker image..."
+                        Write-Host "$env:DOCKER_IMAGE`:$env:IMAGE_TAG"
+                        Write-Host "======================================"
 
-                        docker push %DOCKER_IMAGE%:%IMAGE_TAG%
+                        docker push "$env:DOCKER_IMAGE`:$env:IMAGE_TAG"
 
-                        if %ERRORLEVEL% NEQ 0 (
-                            echo Docker image push failed
-                            exit /b 1
-                        )
+                        if ($LASTEXITCODE -ne 0) {
+                            Write-Error "Docker image push failed"
+                            exit 1
+                        }
 
-                        echo Docker image pushed successfully
+                        Write-Host "Docker image pushed successfully"
                     '''
                 }
             }
@@ -112,7 +121,9 @@ pipeline {
             steps {
 
                 bat '''
+                    echo ======================================
                     echo Deploying application to Kubernetes...
+                    echo ======================================
 
                     kubectl set image deployment/product-management product-management=%DOCKER_IMAGE%:%IMAGE_TAG%
 

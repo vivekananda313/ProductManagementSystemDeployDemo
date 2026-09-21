@@ -93,6 +93,9 @@ pipeline {
 
                         $env:DOCKER_CONFIG = $dockerConfig
 
+                        Write-Host "Username length: $($env:DOCKER_USER.Length)"
+                        Write-Host "Password length: $($env:DOCKER_PASSWORD.Length)"
+
                         $env:DOCKER_PASSWORD |
                             docker login `
                             -u $env:DOCKER_USER `

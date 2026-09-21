@@ -65,9 +65,9 @@ pipeline {
         }
 
         // =========================
-        // 5. Docker Credential Test
+        // 5. Docker Push
         // =========================
-        stage('Docker Credential Test') {
+        stage('Docker Push') {
             steps {
 
                 withCredentials([
@@ -81,26 +81,35 @@ pipeline {
                     powershell '''
 
                         Write-Host "======================================"
-                        Write-Host "Docker Hub Credential Test"
+                        Write-Host "Logging into Docker Hub..."
+                        Write-Host "Username: $env:DOCKER_USERNAME"
                         Write-Host "======================================"
 
-                        Write-Host "Jenkins username: $env:DOCKER_USERNAME"
+                        $env:DOCKER_PASSWORD |
+                            docker login `
+                            --username $env:DOCKER_USERNAME `
+                            --password-stdin
 
-                        $bytes = [System.Text.Encoding]::UTF8.GetBytes(
-                            $env:DOCKER_PASSWORD
-                        )
+                        if ($LASTEXITCODE -ne 0) {
+                            Write-Error "Docker Hub login failed"
+                            exit 1
+                        }
 
-                        $sha256 = [System.Security.Cryptography.SHA256]::Create()
-
-                        $hash = [BitConverter]::ToString(
-                            $sha256.ComputeHash($bytes)
-                        ).Replace("-", "")
-
-                        Write-Host "Jenkins credential SHA256: $hash"
+                        Write-Host "Docker Hub login successful"
 
                         Write-Host "======================================"
-                        Write-Host "Credential test completed"
+                        Write-Host "Pushing Docker Image..."
+                        Write-Host "$env:DOCKER_IMAGE`:$env:IMAGE_TAG"
                         Write-Host "======================================"
+
+                        docker push "$env:DOCKER_IMAGE`:$env:IMAGE_TAG"
+
+                        if ($LASTEXITCODE -ne 0) {
+                            Write-Error "Docker image push failed"
+                            exit 1
+                        }
+
+                        Write-Host "Docker image pushed successfully"
                     '''
                 }
             }
@@ -113,7 +122,9 @@ pipeline {
             steps {
 
                 bat '''
+                    echo ======================================
                     echo Deploying application to Kubernetes...
+                    echo ======================================
 
                     kubectl set image deployment/product-management product-management=%DOCKER_IMAGE%:%IMAGE_TAG%
 
@@ -135,13 +146,13 @@ pipeline {
 
         success {
             echo '======================================'
-            echo 'Pipeline completed successfully!'
+            echo 'PIPELINE COMPLETED SUCCESSFULLY!'
             echo '======================================'
         }
 
         failure {
             echo '======================================'
-            echo 'Pipeline failed!'
+            echo 'PIPELINE FAILED!'
             echo '======================================'
         }
     }

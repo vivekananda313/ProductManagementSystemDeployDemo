@@ -76,10 +76,9 @@ pipeline {
             steps {
 
                 withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-credentials',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASSWORD'
+                    string(
+                        credentialsId: 'dockerhub-token',
+                        variable: 'DOCKER_PASSWORD'
                     )
                 ]) {
 
@@ -93,17 +92,12 @@ pipeline {
 
                         $env:DOCKER_CONFIG = $dockerConfig
 
-                        Write-Host "Running as: $env:USERNAME"
+                        Write-Host "Running as:"
                         whoami
-
-                        $sha = [System.Security.Cryptography.SHA256]::Create()
-                        $bytes = [System.Text.Encoding]::UTF8.GetBytes($env:DOCKER_PASSWORD)
-                        $hash = [System.BitConverter]::ToString($sha.ComputeHash($bytes)) -replace "-",""
-                        Write-Host "Password SHA256: $hash"
 
                         $env:DOCKER_PASSWORD |
                             docker login `
-                            -u $env:DOCKER_USER `
+                            -u "vivek58254" `
                             --password-stdin
                     '''
                 }

@@ -4,21 +4,15 @@ pipeline {
 
     environment {
 
-        // =========================
-        // MySQL Configuration
-        // =========================
+        // MySQL
         DB_URL = 'jdbc:mysql://localhost:3307/product_management_db'
         DB_PASSWORD = credentials('mysql-db-password')
 
-        // =========================
-        // Docker Hub Configuration
-        // =========================
+        // Docker Hub
         DOCKER_IMAGE = 'vivek58254/product-management-system'
         IMAGE_TAG = "${BUILD_NUMBER}"
 
-        // =========================
-        // Kubernetes Configuration
-        // =========================
+        // Kubernetes
         KUBECONFIG = 'C:\\Users\\VIVEKANANDA D\\.kube\\config'
     }
 
@@ -28,45 +22,30 @@ pipeline {
 
     stages {
 
-        // =========================
-        // 1. Checkout
-        // =========================
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        // =========================
-        // 2. Build
-        // =========================
         stage('Build') {
             steps {
                 bat 'mvnw.cmd clean package -DskipTests'
             }
         }
 
-        // =========================
-        // 3. Test
-        // =========================
         stage('Test') {
             steps {
                 bat 'mvnw.cmd test'
             }
         }
 
-        // =========================
-        // 4. Docker Build
-        // =========================
         stage('Docker Build') {
             steps {
                 bat 'docker build -t %DOCKER_IMAGE%:%IMAGE_TAG% .'
             }
         }
 
-        // =========================
-        // 5. Docker Push
-        // =========================
         stage('Docker Push') {
             steps {
 
@@ -79,6 +58,8 @@ pipeline {
                 ]) {
 
                     bat '''
+                        echo Logging into Docker Hub...
+
                         echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
 
                         if %ERRORLEVEL% NEQ 0 (
@@ -101,20 +82,13 @@ pipeline {
             }
         }
 
-        // =========================
-        // 6. Deploy to Kubernetes
-        // =========================
         stage('Deploy to Kubernetes') {
             steps {
-
                 bat 'kubectl set image deployment/product-management product-management=%DOCKER_IMAGE%:%IMAGE_TAG%'
             }
         }
     }
 
-    // =========================
-    // Post Actions
-    // =========================
     post {
 
         success {

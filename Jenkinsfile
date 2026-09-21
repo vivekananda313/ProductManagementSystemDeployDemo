@@ -10,6 +10,8 @@ pipeline {
         IMAGE_TAG = "${BUILD_NUMBER}"
 
         KUBECONFIG = 'C:\\Users\\VIVEKANANDA D\\.kube\\config'
+
+        DOCKER_CONFIG = "${WORKSPACE}\\.docker"
     }
 
     stages {
@@ -40,6 +42,12 @@ pipeline {
                 )]) {
 
                     powershell '''
+                    $dockerConfig = "$env:WORKSPACE\\.docker"
+
+                    New-Item -ItemType Directory -Force -Path $dockerConfig | Out-Null
+
+                    $env:DOCKER_CONFIG = $dockerConfig
+
                     $env:DOCKER_PASSWORD | docker login -u vivek58254 --password-stdin
                     '''
                 }
@@ -66,6 +74,7 @@ pipeline {
     }
 
     post {
+
         success {
             echo 'Pipeline completed successfully!'
         }
